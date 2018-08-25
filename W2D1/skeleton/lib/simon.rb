@@ -10,34 +10,62 @@ class Simon
   end
 
   def play
+    until @game_over
+      take_turn
+      system("clear")
+    end
 
+    game_over_message
+    reset_game
   end
 
   def take_turn
+    self.show_sequence
+    self.require_sequence
 
+    unless game_over
+      self.round_success_message
+      @sequence_length += 1
+    end
   end
 
   def show_sequence
-
+    self.add_random_color
+    @seq.each do |color|
+      puts color
+      sleep 0.75
+      system("clear")
+      sleep 0.25
+    end
   end
 
   def require_sequence
-
+    puts "Repeat the sequence by typing each color on a new line"
+    @seq.each do |color|
+      guess = gets.chomp
+      if color != guess
+        @game_over = true
+        break
+      end
+    end
+    sleep 0.25
   end
 
   def add_random_color
-
+    seq << COLORS.sample
   end
 
   def round_success_message
-
+    puts "Congratulations you passed the round!"
   end
 
   def game_over_message
-
+ puts "Game Over. You Lose."
   end
 
   def reset_game
-
+    @sequence_length = 1
+    @game_over = false
+    @seq = []
   end
 end
