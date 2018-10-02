@@ -1335,11 +1335,31 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var configureStore = function configureStore() {
   var preloadedState = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-  var store = (0, _redux.createStore)(_root_reducer2.default, preloadedState);
+  var store = (0, _redux.createStore)(_root_reducer2.default, preloadedState, (0, _redux.applyMiddleware)(addLoggingToDispatch, bonusMiddleware));
   store.subscribe(function () {
     localStorage.state = JSON.stringify(store.getState());
   });
   return store;
+};
+
+var addLoggingToDispatch = function addLoggingToDispatch(store) {
+  return function (next) {
+    return function (action) {
+      console.log(store.getState());
+      console.log(action);
+      next(action);
+      console.log(store.getState());
+    };
+  };
+};
+
+var bonusMiddleware = function bonusMiddleware(store) {
+  return function (next) {
+    return function (action) {
+      console.log("Bonus Round!");
+      next(action);
+    };
+  };
 };
 
 exports.default = configureStore;
@@ -1378,9 +1398,48 @@ document.addEventListener('DOMContentLoaded', function () {
   var preloadedState = localStorage.state ? JSON.parse(localStorage.state) : {};
   var store = (0, _store2.default)(preloadedState);
 
+  // store.dispatch = addLoggingToDispatch(store);
+
+  store = applyMiddlewares(store, addLoggingToDispatch);
+
   var root = document.getElementById('content');
   _reactDom2.default.render(_react2.default.createElement(_root2.default, { store: store }), root);
 });
+
+// const addLoggingToDispatch = (store) => {
+//   const oldDispatch = store.dispatch
+//
+//   return (action) => {
+//     console.log(store.getState());
+//     console.log(action);
+//     oldDispatch(action);
+//     console.log(store.getState());
+//   }
+// }
+
+
+var addLoggingToDispatch = function addLoggingToDispatch(store) {
+  return function (next) {
+    return function (action) {
+      console.log(store.getState());
+      console.log(action);
+      next(action);
+      console.log(store.getState());
+    };
+  };
+};
+
+var applyMiddlewares = function applyMiddlewares(store) {
+  for (var _len = arguments.length, middlewares = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    middlewares[_key - 1] = arguments[_key];
+  }
+
+  var dispatch = store.dispatch;
+  middlewares.forEach(function (middleware) {
+    dispatch = middleware(store)(dispatch);
+  });
+  return Object.assign({}, store, { dispatch: dispatch });
+};
 
 /***/ }),
 
